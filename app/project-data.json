@@ -1,0 +1,32 @@
+{
+  "projects": [
+    {
+      "name": "Onboarding Revamp",
+      "owner": "Avery Chen",
+      "status": "On Track",
+      "recentActivity": "Completed usability test synthesis and queued copy updates.",
+      "priority": "High"
+    },
+    {
+      "name": "Billing API Stabilization",
+      "owner": "Priya Nair",
+      "status": "At Risk",
+      "recentActivity": "Investigated intermittent timeout issue and prepared mitigation patch.",
+      "priority": "Critical"
+    },
+    {
+      "name": "Mobile Search Improvements",
+      "owner": "Jordan Lee",
+      "status": "Blocked",
+      "recentActivity": "Waiting on analytics schema approval before release candidate build.",
+      "priority": "Medium"
+    },
+    {
+      "name": "Q3 Performance Benchmarking",
+      "owner": "Samira Patel",
+      "status": "Completed",
+      "recentActivity": "Shared benchmark report and archived follow-up actions.",
+      "priority": "Low"
+    }
+  ]
+}

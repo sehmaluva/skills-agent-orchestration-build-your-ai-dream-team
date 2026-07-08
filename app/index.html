@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Pulse</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="page-header">
+    <h1>Project Pulse</h1>
+    <p>Live overview of project progress and priorities.</p>
+  </header>
+
+  <main class="dashboard" id="dashboard-content" tabindex="-1" aria-live="polite">
+    <p class="state-message">Loading projects...</p>
+  </main>
+
+  <script>
+    (function initializeDashboard() {
+      const dashboard = document.getElementById("dashboard-content");
+      const dataUrl = "project-data.json";
+
+      const slugify = (value) => {
+        if (typeof value !== "string") {
+          return "unknown";
+        }
+        const slug = value.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+        return slug || "unknown";
+      };
+
+      const getBadgeSlug = (value, allowedSlugs) => {
+        const slug = slugify(value);
+        return allowedSlugs.includes(slug) ? slug : "unknown";
+      };
+
+      const safeText = (value, fallback) => {
+        if (typeof value === "string" && value.trim() !== "") {
+          return value.trim();
+        }
+        return fallback;
+      };
+
+      const createDetailRow = (label, value, badgeClassPrefix, allowedSlugs) => {
+        const row = document.createElement("p");
+        row.className = "detail-row";
+
+        const labelSpan = document.createElement("span");
+        labelSpan.className = "detail-label";
+        labelSpan.textContent = label + ":";
+
+        const valueSpan = document.createElement("span");
+        valueSpan.className = "detail-value";
+        valueSpan.textContent = value;
+
+        if (badgeClassPrefix) {
+          const badgeSlug = getBadgeSlug(value, allowedSlugs || []);
+          valueSpan.classList.add("badge", badgeClassPrefix, badgeClassPrefix + "--" + badgeSlug);
+        }
+
+        row.append(labelSpan, valueSpan);
+        return row;
+      };
+
+      const createProjectCard = (project) => {
+        const card = document.createElement("li");
+        card.className = "project-card";
+
+        const title = document.createElement("h2");
+        title.className = "project-name";
+        title.textContent = safeText(project.name, "Unnamed Project");
+
+        const owner = document.createElement("p");
+        owner.className = "project-owner";
+        owner.textContent = "Owner: " + safeText(project.owner, "Unassigned");
+
+        const status = safeText(project.status, "Unknown");
+        const recentActivity = safeText(project.recentActivity, "No recent updates");
+        const priority = safeText(project.priority, "Unknown");
+
+        card.append(
+          title,
+          owner,
+          createDetailRow("Status", status, "status-badge", ["on-track", "at-risk", "blocked", "completed"]),
+          createDetailRow("Recent Activity", recentActivity),
+          createDetailRow("Priority", priority, "priority-badge", ["low", "medium", "high", "critical"])
+        );
+
+        return card;
+      };
+
+      const renderState = (message, stateClass) => {
+        dashboard.innerHTML = "";
+        const state = document.createElement("p");
+        state.className = "state-message " + stateClass;
+        state.textContent = message;
+        dashboard.appendChild(state);
+      };
+
+      const renderProjects = (projects) => {
+        dashboard.innerHTML = "";
+        const list = document.createElement("ul");
+        list.className = "project-list";
+
+        projects.forEach((project) => {
+          list.appendChild(createProjectCard(project));
+        });
+
+        dashboard.appendChild(list);
+      };
+
+      fetch(dataUrl)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Unable to load project data (" + response.status + ")");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          const projects = Array.isArray(data.projects) ? data.projects : [];
+
+          if (projects.length === 0) {
+            renderState("No active projects found.", "state-empty");
+            return;
+          }
+
+          renderProjects(projects);
+        })
+        .catch((error) => {
+          renderState("Error loading projects. " + error.message, "state-error");
+        });
+    })();
+  </script>
+</body>
+</html>
